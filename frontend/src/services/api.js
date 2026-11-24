@@ -1,8 +1,11 @@
-const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com//api";
+const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com/api";
 
 const getToken = () => localStorage.getItem("fc-admin-token");
 
 const request = async (endpoint, options = {}, protectedRoute = false) => {
+  const cleanBaseURL = API_URL.replace(/\/+$/, "");
+  const cleanEndpoint = `/${endpoint.replace(/^\/+/, "")}`;
+
   const headers = {
     ...(options.body instanceof FormData
       ? {}
@@ -13,7 +16,7 @@ const request = async (endpoint, options = {}, protectedRoute = false) => {
     ...options.headers,
   };
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
+  const response = await fetch(`${cleanBaseURL}${cleanEndpoint}`, {
     ...options,
     headers,
   });
