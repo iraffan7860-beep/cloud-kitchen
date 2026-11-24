@@ -18,7 +18,7 @@ import ManageCategory from "./pages/admin/ManageCategories";
 import ManageProduct from "./pages/admin/ManageProduct";
 import ManageSetting from "./pages/admin/ManageSettings";
 
-const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com//api";
+const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com/api";
 
 function App() {
   const [products, setProducts] = useState([]);
