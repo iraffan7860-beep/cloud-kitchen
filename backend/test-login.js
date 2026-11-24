@@ -1,7 +1,7 @@
 const loginTest = async () => {
   try {
     const response = await fetch(
-      "http://localhost:5000/api/admin/login",
+      "https://cloud-kitchen-1-x5q3.onrender.com//api/admin/login",
       {
         method: "POST",
         headers: {
