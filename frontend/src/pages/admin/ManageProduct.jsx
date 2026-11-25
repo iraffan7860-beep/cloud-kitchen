@@ -32,10 +32,10 @@ function ManageProduct() {
         Authorization: `Bearer ${getToken()}`,
       };
 
-      const [productResponse, categoryResponse] = await Promise.all([
-        fetch(`${API_URL}/products`, { headers }),
-        fetch(`${API_URL}/categories`, { headers }),
-      ]);
+     const [productResponse, categoryResponse] = await Promise.all([
+  fetch(`${API_URL}/products`, { headers }),
+  fetch(`${API_URL}/categories/public`, { headers }),
+]); 
 
       const productData = await productResponse.json();
       const categoryData = await categoryResponse.json();
