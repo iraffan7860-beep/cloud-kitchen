@@ -24,7 +24,9 @@ const request = async (endpoint, options = {}, protectedRoute = false) => {
       headers,
     });
   } catch (error) {
-    throw new Error("Cannot connect to FC Kitchen backend. Check your internet connection or backend server.");
+    throw new Error(
+      "Cannot connect to FC Kitchen backend. Check your internet connection or backend server."
+    );
   }
 
   const contentType = response.headers.get("content-type") || "";
