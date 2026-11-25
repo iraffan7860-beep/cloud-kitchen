@@ -1,469 +1,278 @@
+
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 
-function CheckoutForm({ settings, onBack }) {
-  const { cart, cartCount, cartTotal } = useCart();
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [orderType, setOrderType] = useState("Delivery");
-  const [address, setAddress] = useState("");
-  const [instructions, setInstructions] = useState("");
+function CheckoutForm({ onBack }) {
+  const { cart, cartCount, cartTotal, clearCart } = useCart();
+
+  const [formData, setFormData] = useState({
+    customerName: "",
+    phone: "",
+    orderType: "Delivery",
+    address: "",
+    instructions: ""
+  });
+
+  const [orderOpened, setOrderOpened] = useState(false);
+  const [showReview, setShowReview] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [review, setReview] = useState("");
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showFreeDeliveryPopup, setShowFreeDeliveryPopup] = useState(false);
 
-  const formatPrice = (price) => `₹${Number(price || 0).toFixed(0)}`;
-
-  // Free delivery applies only when subtotal is ABOVE ₹100.
-  const isFreeDelivery = cartTotal > 100;
-
-  // Use the delivery charge saved in admin settings.
-  const configuredDeliveryCharge = Number(settings?.deliveryCharge || 0);
-
-  const deliveryCharge =
-    orderType === "Delivery" && !isFreeDelivery
-      ? configuredDeliveryCharge
-      : 0;
-
-  const grandTotal = cartTotal + deliveryCharge;
-
-  const handleOrderTypeChange = (event) => {
-    const selectedType = event.target.value;
-
-    setOrderType(selectedType);
-    setError("");
-
-    if (selectedType === "Delivery" && cartTotal > 100) {
-      setShowFreeDeliveryPopup(true);
-    }
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
 
-  const placeOrder = (event) => {
-    event.preventDefault();
-    setError("");
-
-    if (!name.trim()) {
-      setError("Please enter your full name.");
+  const handleWhatsAppOrder = () => {
+    if (
+      !formData.customerName.trim() ||
+      !formData.phone.trim() ||
+      (formData.orderType === "Delivery" && !formData.address.trim())
+    ) {
+      alert("Please fill all required details.");
       return;
     }
 
-    if (!/^[6-9]\d{9}$/.test(phone.trim())) {
-      setError("Please enter a valid 10-digit Indian mobile number.");
+    if (!cart || cart.length === 0) {
+      alert("Your cart is empty.");
       return;
     }
 
-    if (orderType === "Delivery" && !address.trim()) {
-      setError("Please enter your delivery address.");
-      return;
-    }
-
-    if (cart.length === 0) {
-      setError("Your cart is empty.");
-      return;
-    }
-
-    const itemsMessage = cart
-      .map(
-        (item) =>
-          `• ${item.name} x ${item.quantity} = ${formatPrice(
-            item.price * item.quantity
-          )}`
-      )
+    const orderItems = cart
+      .map((item) => {
+        return `${item.name} x ${item.quantity} - ₹${
+          item.price * item.quantity
+        }`;
+      })
       .join("\n");
 
-    const deliveryMessage =
-      orderType === "Pickup"
-        ? "Delivery Charge: ₹0 (Self Pickup)"
-        : isFreeDelivery
-        ? "Delivery Charge: FREE"
-        : configuredDeliveryCharge > 0
-        ? `Delivery Charge: ${formatPrice(deliveryCharge)}`
-        : "Delivery Charge: To be confirmed by FC Kitchen";
-
-    const totalMessage =
-      orderType === "Delivery" &&
-      !isFreeDelivery &&
-      configuredDeliveryCharge <= 0
-        ? "Total Before Delivery Charge: " + formatPrice(cartTotal)
-        : "Grand Total: " + formatPrice(grandTotal);
-
     const message = `
-*NEW ORDER - FC KITCHEN*
+*FC KITCHEN ORDER*
 
-*Customer Details*
-Name: ${name.trim()}
-Phone: ${phone.trim()}
-Order Type: ${orderType}
-${orderType === "Delivery" ? `Address: ${address.trim()}` : ""}
+Customer: ${formData.customerName}
+Phone: ${formData.phone}
+Order Type: ${formData.orderType}
 
-*Order Items*
-${itemsMessage}
+${formData.orderType === "Delivery"
+  ? `Address: ${formData.address}`
+  : ""}
 
-*Total Items:* ${cartCount}
-*Subtotal:* ${formatPrice(cartTotal)}
-${deliveryMessage}
-${totalMessage}
+*ORDER ITEMS*
+${orderItems}
 
-*Special Instructions:*
-${instructions.trim() || "None"}
+Total Items: ${cartCount}
+Total Amount: ₹${cartTotal}
 
-Please confirm my order. Thank you!
-`.trim();
+Instructions: ${formData.instructions || "None"}
+`;
 
-    const businessPhone = String(
-      settings?.phone || "6300612693"
-    ).replace(/\D/g, "");
+    const whatsappNumber = "916300612693";
 
-    const whatsappNumber =
-      businessPhone.length === 10
-        ? `91${businessPhone}`
-        : businessPhone;
+    const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
+      message
+    )}`;
 
-    const whatsappURL =
-      `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
-
-    window.open(whatsappURL, "_blank", "noopener,noreferrer");
+    window.open(whatsappURL, "_blank");
+    setOrderOpened(true);
   };
 
-  const inputStyle = {
-    width: "100%",
-    padding: "13px",
-    marginTop: "8px",
-    background: "#17110e",
-    border: "1px solid rgba(198,161,91,0.35)",
-    color: "#f5eee3",
-    borderRadius: "3px",
-    outline: "none",
-    fontFamily: "inherit",
+  const handleReceivedOrder = () => {
+    setShowReview(true);
   };
 
-  const labelStyle = {
-    display: "block",
-    color: "#e4c98c",
-    fontSize: "13px",
-    marginTop: "18px",
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!review.trim()) {
+      setError("Please write your review.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch(`${API_URL}/api/testimonials`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          customerName: formData.customerName,
+          rating,
+          review: review.trim()
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to submit review.");
+      }
+
+      setReviewSubmitted(true);
+      clearCart();
+
+    } catch (error) {
+      setError(error.message || "Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (reviewSubmitted) {
+    return (
+      <div className="checkout-form">
+        <div className="review-success">
+          <h2>Thank You!</h2>
+          <p>Your review has been submitted successfully.</p>
+          <p>It will appear on our website after admin approval.</p>
+
+          <button onClick={onBack}>
+            Back to Menu
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <section
-      style={{
-        padding: "65px 7%",
-        background: "#17110e",
-        minHeight: "70vh",
-      }}
-    >
-      <div style={{ maxWidth: "850px", margin: "auto" }}>
-        <button
-          type="button"
-          onClick={onBack}
-          style={{
-            background: "transparent",
-            border: "1px solid #c6a15b",
-            color: "#e4c98c",
-            padding: "10px 18px",
-            cursor: "pointer",
-            marginBottom: "25px",
-          }}
-        >
-          ← Back to Cart
-        </button>
+    <div className="checkout-form">
+      <h2>Checkout</h2>
 
-        <div style={{ textAlign: "center", marginBottom: "35px" }}>
-          <p className="eyebrow">ALMOST THERE</p>
-          <h2
-            style={{
-              fontFamily: "'Playfair Display', serif",
-              fontSize: "36px",
-              color: "#f5eee3",
-            }}
-          >
-            Complete Your Order
-          </h2>
-          <p style={{ color: "#b7a99a", marginTop: "10px" }}>
-            Enter your details to continue on WhatsApp.
-          </p>
-        </div>
-
-        <form
-          onSubmit={placeOrder}
-          style={{
-            background: "#211813",
-            border: "1px solid rgba(198,161,91,0.25)",
-            padding: "25px",
-            borderRadius: "5px",
-          }}
-        >
-          <h3 style={{ color: "#e4c98c" }}>Customer Details</h3>
-
-          <label style={labelStyle}>
-            Full Name *
+      {!showReview ? (
+        <>
+          <div className="checkout-details">
+            <label>Customer Name *</label>
             <input
-              style={inputStyle}
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your full name"
+              name="customerName"
+              value={formData.customerName}
+              onChange={handleChange}
+              placeholder="Enter your name"
               required
             />
-          </label>
 
-          <label style={labelStyle}>
-            Phone Number *
+            <label>Phone Number *</label>
             <input
-              style={inputStyle}
               type="tel"
-              inputMode="numeric"
-              maxLength={10}
-              value={phone}
-              onChange={(e) =>
-                setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))
-              }
-              placeholder="10-digit mobile number"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="Enter phone number"
               required
             />
-          </label>
 
-          <label style={labelStyle}>
-            Order Type *
+            <label>Order Type *</label>
             <select
-              style={inputStyle}
-              value={orderType}
-              onChange={handleOrderTypeChange}
+              name="orderType"
+              value={formData.orderType}
+              onChange={handleChange}
             >
-              <option value="Delivery">Home Delivery</option>
-              <option value="Pickup">Self Pickup</option>
+              <option value="Delivery">Delivery</option>
+              <option value="Pickup">Pickup</option>
             </select>
-          </label>
 
-          {orderType === "Delivery" && (
-            <label style={labelStyle}>
-              Delivery Address *
-              <textarea
-                style={{ ...inputStyle, minHeight: "90px", resize: "vertical" }}
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter your complete delivery address"
-                required
-              />
-            </label>
-          )}
-
-          <label style={labelStyle}>
-            Special Instructions (Optional)
-            <textarea
-              style={{ ...inputStyle, minHeight: "85px", resize: "vertical" }}
-              value={instructions}
-              onChange={(e) => setInstructions(e.target.value)}
-              placeholder="Example: Less spicy, no onions..."
-            />
-          </label>
-
-          <div
-            style={{
-              marginTop: "30px",
-              padding: "20px",
-              background: "#17110e",
-              border: "1px solid rgba(198,161,91,0.25)",
-            }}
-          >
-            <h3 style={{ color: "#e4c98c", marginBottom: "15px" }}>
-              Order Summary
-            </h3>
-
-            <p style={{ color: "#e4c98c", fontSize: "13px", marginBottom: "18px" }}>
-              Free Delivery on Orders Above ₹100!
-            </p>
-
-            {cart.map((item) => (
-              <div
-                key={item._id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                  marginBottom: "12px",
-                  color: "#b7a99a",
-                  fontSize: "13px",
-                }}
-              >
-                <span>{item.name} × {item.quantity}</span>
-                <strong style={{ color: "#f5eee3" }}>
-                  {formatPrice(item.price * item.quantity)}
-                </strong>
-              </div>
-            ))}
-
-            <div
-              style={{
-                borderTop: "1px solid rgba(198,161,91,0.25)",
-                paddingTop: "15px",
-                marginTop: "15px",
-                display: "flex",
-                justifyContent: "space-between",
-                color: "#b7a99a",
-                fontSize: "14px",
-              }}
-            >
-              <span>Subtotal</span>
-              <span>{formatPrice(cartTotal)}</span>
-            </div>
-
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginTop: "12px",
-                color: isFreeDelivery && orderType === "Delivery"
-                  ? "#9bd6a5"
-                  : "#b7a99a",
-                fontSize: "14px",
-              }}
-            >
-              <span>Delivery Charge</span>
-              <strong>
-                {orderType === "Pickup"
-                  ? "₹0"
-                  : isFreeDelivery
-                  ? "FREE"
-                  : configuredDeliveryCharge > 0
-                  ? formatPrice(deliveryCharge)
-                  : "To be confirmed"}
-              </strong>
-            </div>
-
-            <div
-              style={{
-                borderTop: "1px solid rgba(198,161,91,0.25)",
-                paddingTop: "15px",
-                marginTop: "15px",
-                display: "flex",
-                justifyContent: "space-between",
-                color: "#e4c98c",
-                fontSize: "18px",
-                fontWeight: "700",
-              }}
-            >
-              <span>
-                {orderType === "Delivery" &&
-                !isFreeDelivery &&
-                configuredDeliveryCharge <= 0
-                  ? "Subtotal"
-                  : "Grand Total"}
-              </span>
-              <span>{formatPrice(grandTotal)}</span>
-            </div>
-
-            {orderType === "Delivery" && isFreeDelivery && (
-              <p style={{ color: "#9bd6a5", fontSize: "12px", marginTop: "12px" }}>
-                Congratulations! Your delivery is free.
-              </p>
+            {formData.orderType === "Delivery" && (
+              <>
+                <label>Delivery Address *</label>
+                <textarea
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  placeholder="Enter delivery address"
+                  required
+                />
+              </>
             )}
 
-            {orderType === "Delivery" &&
-              !isFreeDelivery &&
-              configuredDeliveryCharge <= 0 && (
-                <p style={{ color: "#b7a99a", fontSize: "11px", marginTop: "12px" }}>
-                  Delivery charge will be confirmed by FC Kitchen.
-                </p>
-              )}
+            <label>Special Instructions</label>
+            <textarea
+              name="instructions"
+              value={formData.instructions}
+              onChange={handleChange}
+              placeholder="Any special instructions?"
+            />
           </div>
 
-          {error && (
-            <p style={{ color: "#ff9a8b", marginTop: "18px", fontSize: "13px" }}>
-              {error}
-            </p>
+          <div className="checkout-summary">
+            <h3>Order Summary</h3>
+
+            {cart?.map((item) => (
+              <p key={item._id || item.id}>
+                {item.name} x {item.quantity} — ₹
+                {item.price * item.quantity}
+              </p>
+            ))}
+
+            <h3>Total: ₹{cartTotal}</h3>
+          </div>
+
+          {!orderOpened ? (
+            <button onClick={handleWhatsAppOrder}>
+              Place Order on WhatsApp
+            </button>
+          ) : (
+            <button onClick={handleReceivedOrder}>
+              I Received My Order
+            </button>
           )}
 
-          <button
-            type="submit"
-            className="checkout-btn"
-            style={{ marginTop: "22px" }}
-          >
-            Place Order on WhatsApp
+          <button onClick={onBack}>
+            Back
+          </button>
+        </>
+      ) : (
+        <form onSubmit={handleReviewSubmit} className="review-form">
+          <h2>Share Your Experience</h2>
+          <p>How was your experience with FC Kitchen?</p>
+
+          <div className="review-stars">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                type="button"
+                key={star}
+                onClick={() => setRating(star)}
+                style={{
+                  color: star <= rating ? "#f5a623" : "#ccc",
+                  fontSize: "32px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer"
+                }}
+                aria-label={`${star} star${star > 1 ? "s" : ""}`}
+              >
+                ★
+              </button>
+            ))}
+          </div>
+
+          <p>{rating} out of 5 stars</p>
+
+          <label>Write Your Review</label>
+          <textarea
+            value={review}
+            onChange={(e) => setReview(e.target.value)}
+            placeholder="Tell us about your experience..."
+            rows="5"
+            required
+          />
+
+          {error && <p className="error-message">{error}</p>}
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Submitting..." : "Submit Review"}
           </button>
         </form>
-      </div>
-
-      {showFreeDeliveryPopup && (
-        <div
-          onClick={() => setShowFreeDeliveryPopup(false)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            background: "rgba(0,0,0,0.8)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-          }}
-        >
-          <div
-            onClick={(event) => event.stopPropagation()}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="free-delivery-title"
-            style={{
-              width: "100%",
-              maxWidth: "400px",
-              padding: "35px 25px",
-              textAlign: "center",
-              background: "#211813",
-              border: "1px solid #c6a15b",
-              borderRadius: "8px",
-              boxShadow: "0 15px 50px rgba(0,0,0,0.5)",
-            }}
-          >
-            <div style={{ fontSize: "45px", marginBottom: "12px" }}>
-              🎉
-            </div>
-
-            <p
-              style={{
-                color: "#b7a99a",
-                letterSpacing: "3px",
-                fontSize: "11px",
-              }}
-            >
-              A LITTLE SURPRISE FROM FC KITCHEN
-            </p>
-
-            <h2
-              id="free-delivery-title"
-              style={{
-                color: "#e4c98c",
-                fontFamily: "'Playfair Display', serif",
-                fontSize: "30px",
-                margin: "12px 0",
-              }}
-            >
-              YOU GOT FREE DELIVERY!
-            </h2>
-
-            <p style={{ color: "#f5eee3", lineHeight: "1.7" }}>
-              Your order is above ₹100. Delivery charges are on us!
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setShowFreeDeliveryPopup(false)}
-              style={{
-                marginTop: "25px",
-                padding: "12px 25px",
-                background: "#c6a15b",
-                border: "none",
-                color: "#17110e",
-                fontWeight: "700",
-                cursor: "pointer",
-                borderRadius: "3px",
-              }}
-            >
-              YAY! CONTINUE
-            </button>
-          </div>
-        </div>
       )}
-    </section>
+    </div>
   );
 }
 

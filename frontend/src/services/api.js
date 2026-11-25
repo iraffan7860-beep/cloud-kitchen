@@ -1,4 +1,4 @@
-const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com/api";
+const API_URL = "http://localhost:5000/api";
 
 const getToken = () => localStorage.getItem("fc-admin-token");
 
@@ -16,12 +16,34 @@ const request = async (endpoint, options = {}, protectedRoute = false) => {
     ...options.headers,
   };
 
-  const response = await fetch(`${cleanBaseURL}${cleanEndpoint}`, {
-    ...options,
-    headers,
-  });
+  let response;
 
-  const data = await response.json().catch(() => ({}));
+  try {
+    response = await fetch(`${cleanBaseURL}${cleanEndpoint}`, {
+      ...options,
+      headers,
+    });
+  } catch (error) {
+    throw new Error("Cannot connect to FC Kitchen backend. Check your internet connection or backend server.");
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    const responseText = await response.text();
+
+    console.error("Non-JSON API response:", {
+      endpoint: cleanEndpoint,
+      status: response.status,
+      response: responseText.slice(0, 300),
+    });
+
+    throw new Error(
+      `API returned HTML instead of JSON. Endpoint: ${cleanEndpoint}. Status: ${response.status}`
+    );
+  }
+
+  const data = await response.json();
 
   if (!response.ok) {
     throw new Error(data.message || "Something went wrong.");

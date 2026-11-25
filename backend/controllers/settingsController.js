@@ -56,7 +56,9 @@ export const updateSettings = async (req, res) => {
       "deliveryRadiusKm",
       "deliveryCharge",
       "openingTime",
-      "closingTime"
+      "closingTime",
+      "isAvailable",
+      "availabilityMessage"
     ];
 
     const updates = {};
@@ -67,6 +69,30 @@ export const updateSettings = async (req, res) => {
       }
     }
 
+    // Validate availability
+    if (
+      updates.isAvailable !== undefined &&
+      typeof updates.isAvailable !== "boolean"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid availability status."
+      });
+    }
+
+    // Validate availability message
+    if (updates.availabilityMessage !== undefined) {
+      if (typeof updates.availabilityMessage !== "string") {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid availability message."
+        });
+      }
+
+      updates.availabilityMessage = updates.availabilityMessage.trim();
+    }
+
+    // Validate delivery radius
     if (
       updates.deliveryRadiusKm !== undefined &&
       (!Number.isFinite(Number(updates.deliveryRadiusKm)) ||
@@ -78,6 +104,7 @@ export const updateSettings = async (req, res) => {
       });
     }
 
+    // Validate delivery charge
     if (
       updates.deliveryCharge !== undefined &&
       (!Number.isFinite(Number(updates.deliveryCharge)) ||
@@ -114,6 +141,8 @@ export const updateSettings = async (req, res) => {
       settings
     });
   } catch (error) {
+    console.error("Update Settings Error:", error);
+
     res.status(500).json({
       success: false,
       message: "Unable to update settings."

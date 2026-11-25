@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 
 import {
@@ -17,8 +18,9 @@ import AdminLogin from "./pages/admin/AdminLogin";
 import ManageCategory from "./pages/admin/ManageCategories";
 import ManageProduct from "./pages/admin/ManageProduct";
 import ManageSetting from "./pages/admin/ManageSettings";
+import ManageReviews from "./pages/admin/ManageReviews";
 
-const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com/api";
+const API_URL = "http://localhost:5000/api";
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -40,12 +42,30 @@ function App() {
   const [adminChecking, setAdminChecking] = useState(true);
   const [adminPage, setAdminPage] = useState("overview");
 
-  const { addToCart, cartCount } = useCart();
+  const {
+    addToCart,
+    updateQuantity,
+    cart,
+    cartCount,
+  } = useCart();
+
+  const isKitchenClosed = settings.isAvailable === false;
 
   const navigate = (path) => {
     window.history.pushState({}, "", path);
     setCurrentPath(path);
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const goToCheckout = () => {
+    if (isKitchenClosed || loading) return;
+    navigate("/checkout");
+  };
+
+  const handleViewCart = () => {
+    if (cartCount > 0) {
+      goToCheckout();
+    }
   };
 
   // Browser navigation
@@ -117,14 +137,14 @@ function App() {
     checkAdmin();
   }, [currentPath]);
 
-  // Load public website data only
+  // Load public website data
   useEffect(() => {
-    if (
-      currentPath.startsWith("/admin")
-    ) {
+    if (currentPath.startsWith("/admin")) {
       setLoading(false);
       return;
     }
+
+    setLoading(true);
 
     const loadWebsite = async () => {
       try {
@@ -148,6 +168,8 @@ function App() {
         );
 
         setSettings(settingsData.settings || settingsData || {});
+
+        console.log("SETTINGS DATA:", settingsData);
       } catch {
         setError("Unable to load the menu. Please refresh the page.");
       } finally {
@@ -232,6 +254,9 @@ function App() {
         case "settings":
           return <ManageSetting />;
 
+        case "reviews":
+          return <ManageReviews />;
+
         default:
           return (
             <div style={adminStyles.welcome}>
@@ -295,6 +320,7 @@ function App() {
             { id: "products", label: "Manage Products", icon: "🍽️" },
             { id: "categories", label: "Manage Categories", icon: "📂" },
             { id: "settings", label: "Website Settings", icon: "⚙️" },
+            { id: "reviews", label: "Manage Reviews", icon: "⭐" },
           ].map((item) => (
             <button
               key={item.id}
@@ -337,6 +363,8 @@ function App() {
                   ? "Manage Products"
                   : adminPage === "categories"
                   ? "Manage Categories"
+                  : adminPage === "reviews"
+                  ? "Manage Reviews"
                   : "Website Settings"}
               </h2>
             </div>
@@ -351,6 +379,48 @@ function App() {
 
   // CHECKOUT PAGE
   if (currentPath === "/checkout") {
+    if (loading) {
+      return (
+        <div style={adminStyles.loading}>
+          Loading FC Kitchen...
+        </div>
+      );
+    }
+
+    if (isKitchenClosed) {
+      return (
+        <div className="website">
+          <header className="navbar">
+            <a
+              href="/"
+              className="logo"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate("/");
+              }}
+            >
+              FC <span>KITCHEN</span>
+            </a>
+
+            <button
+              className="nav-cart"
+              onClick={() => navigate("/")}
+            >
+              Back to Menu
+            </button>
+          </header>
+
+          <CheckoutForm
+            settings={settings}
+            onBack={() => navigate("/")}
+          />
+
+          <Footer settings={settings} />
+          <BackToTop />
+        </div>
+      );
+    }
+
     return (
       <div className="website">
         <header className="navbar">
@@ -387,43 +457,62 @@ function App() {
   // HOMEPAGE
   return (
     <div className="website">
-      <Navbar
-        onCheckout={() => navigate("/checkout")}
-      />
+      <Navbar onCheckout={goToCheckout} />
 
-      <section className="hero" id="home">
-        <div className="hero-content">
-          <p className="eyebrow">WELCOME TO FC KITCHEN</p>
+      <section
+        className={`hero ${isKitchenClosed ? "hero-closed" : ""}`}
+        id="home"
+      >
+        {isKitchenClosed ? (
+          <div className="kitchen-closed-banner">
+            <div className="closed-ribbon">
+              <span className="closed-dot"></span>
+              TEMPORARILY CLOSED
+            </div>
 
-          <h1>
-            A Taste Like Home
-            <br />
-            <span>in Every Bite.</span>
-          </h1>
+            <h2>WE'RE CLOSED RIGHT NOW</h2>
 
-          <p className="hero-description">
-            Freshly prepared food, delicious flavours and happiness
-            served with every order.
-          </p>
+            <p>
+              {settings.availabilityMessage ||
+                "We're not accepting orders right now. Please visit again soon!"}
+            </p>
 
-          <div className="hero-buttons">
-            <button
-              className="primary-btn"
-              onClick={() => scrollToSection("menu")}
-            >
-              Explore Menu
-            </button>
-
-            <button
-              className="secondary-btn"
-              onClick={() => {
-                document.querySelector(".nav-cart")?.click();
-              }}
-            >
-              View Cart ({cartCount})
-            </button>
+            <span className="closed-status">
+              NOT ACCEPTING ORDERS
+            </span>
           </div>
-        </div>
+        ) : (
+          <div className="hero-content">
+            <p className="eyebrow">WELCOME TO FC KITCHEN</p>
+
+            <h1>
+              A Taste Like Home
+              <br />
+              <span>in Every Bite.</span>
+            </h1>
+
+            <p className="hero-description">
+              Freshly prepared food, delicious flavours and happiness
+              served with every order.
+            </p>
+
+            <div className="hero-buttons">
+              <button
+                className="primary-btn"
+                onClick={() => scrollToSection("menu")}
+              >
+                Explore Menu
+              </button>
+
+              <button
+                className="secondary-btn"
+                onClick={handleViewCart}
+              >
+                View Cart ({cartCount})
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="find-section" id="find-kitchen">
@@ -570,63 +659,118 @@ function App() {
           </p>
         ) : (
           <div className="product-grid">
-            {filteredProducts.map((product) => (
-              <article
-                className="product-card"
-                key={product._id}
-              >
-                <div className="product-image">
-                  {product.image ? (
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                    />
-                  ) : (
-                    <div className="image-placeholder">
-                      <span>FC</span>
-                      <small>KITCHEN</small>
-                    </div>
-                  )}
-                </div>
+            {filteredProducts.map((product) => {
+              const cartItem = cart.find(
+                (item) => item._id === product._id
+              );
 
-                <div className="product-info">
-                  <h3>{product.name}</h3>
+              const quantity = cartItem?.quantity || 0;
 
-                  <p className="product-description">
-                    {product.description ||
-                      "Freshly prepared with love."}
-                  </p>
-
-                  <div className="product-bottom">
-                    <strong>{formatPrice(product.price)}</strong>
-
-                    <button
-                      className="add-cart-btn"
-                      disabled={product.isAvailable === false}
-                      onClick={() => addToCart(product)}
-                    >
-                      {product.isAvailable === false
-                        ? "Unavailable"
-                        : "+ Add"}
-                    </button>
+              return (
+                <article
+                  className="product-card"
+                  key={product._id}
+                >
+                  <div className="product-image">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                      />
+                    ) : (
+                      <div className="image-placeholder">
+                        <span>FC</span>
+                        <small>KITCHEN</small>
+                      </div>
+                    )}
                   </div>
-                </div>
-              </article>
-            ))}
+
+                  <div className="product-info">
+                    <h3>{product.name}</h3>
+
+                    <p className="product-description">
+                      {product.description ||
+                        "Freshly prepared with love."}
+                    </p>
+
+                    <div className="product-bottom">
+                      <strong>{formatPrice(product.price)}</strong>
+
+                      {product.isAvailable === false ||
+                      isKitchenClosed ? (
+                        <button
+                          className="add-cart-btn"
+                          disabled
+                        >
+                          {isKitchenClosed
+                            ? "Kitchen Closed"
+                            : "Unavailable"}
+                        </button>
+                      ) : quantity === 0 ? (
+                        <button
+                          className="add-cart-btn"
+                          onClick={() => addToCart(product)}
+                        >
+                          + Add
+                        </button>
+                      ) : (
+                        <div className="quantity-control">
+                          <button
+                            type="button"
+                            aria-label={`Decrease ${product.name} quantity`}
+                            onClick={() =>
+                              updateQuantity(product._id, -1)
+                            }
+                          >
+                            −
+                          </button>
+
+                          <span>{quantity}</span>
+
+                          <button
+                            type="button"
+                            aria-label={`Increase ${product.name} quantity`}
+                            onClick={() =>
+                              updateQuantity(product._id, 1)
+                            }
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
 
         <div className="menu-cart-link">
           <button
             className="primary-btn"
-            onClick={() => {
-              document.querySelector(".nav-cart")?.click();
-            }}
+            onClick={handleViewCart}
+            disabled={isKitchenClosed || cartCount === 0}
           >
-            View Your Cart ({cartCount})
+            {isKitchenClosed
+              ? "Kitchen Closed"
+              : `View Your Cart (${cartCount})`}
           </button>
         </div>
       </section>
+
+      {/* STICKY VIEW CART BUTTON */}
+      {cartCount > 0 && !isKitchenClosed && (
+        <div className="sticky-cart-bar">
+          <button onClick={handleViewCart}>
+            <span>
+              {cartCount} {cartCount === 1 ? "Item" : "Items"} Added
+            </span>
+
+            <strong>View Cart →</strong>
+          </button>
+        </div>
+      )}
 
       <Footer settings={settings} />
       <BackToTop />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com//api";
+const API_URL = "http://localhost:5000/api";
 
 function ManageSetting() {
   const [form, setForm] = useState({
@@ -15,6 +15,8 @@ function ManageSetting() {
     deliveryCharge: 0,
     openingTime: "07:00",
     closingTime: "00:00",
+    isAvailable: true,
+    availabilityMessage: "Today we are not accepting orders.",
   });
 
   const [loading, setLoading] = useState(false);
@@ -45,6 +47,10 @@ function ManageSetting() {
             ...settings,
             deliveryRadiusKm: settings.deliveryRadiusKm ?? 5,
             deliveryCharge: settings.deliveryCharge ?? 0,
+            isAvailable: settings.isAvailable ?? true,
+            availabilityMessage:
+              settings.availabilityMessage ??
+              "Today we are not accepting orders.",
           }));
         }
       } catch (error) {
@@ -56,11 +62,11 @@ function ManageSetting() {
   }, []);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
 
     setForm((previous) => ({
       ...previous,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -124,9 +130,51 @@ function ManageSetting() {
   return (
     <section style={styles.container}>
       <h2 style={styles.heading}>Website Settings</h2>
+
       <p style={styles.subtitle}>
         Manage your FC Kitchen business information.
       </p>
+
+      {/* Kitchen Availability */}
+      <div style={styles.availabilityBox}>
+        <h3 style={styles.availabilityHeading}>
+          Kitchen Availability
+        </h3>
+
+        <label style={styles.availabilityToggle}>
+          <input
+            type="checkbox"
+            name="isAvailable"
+            checked={form.isAvailable}
+            onChange={handleChange}
+          />
+
+          <span>
+            {form.isAvailable
+              ? "Accepting Orders"
+              : "Not Accepting Orders"}
+          </span>
+        </label>
+
+        <p style={styles.availabilityInfo}>
+          {form.isAvailable
+            ? "Customers can place orders when the website is ready for ordering."
+            : "Customers will see your unavailable message."}
+        </p>
+
+        <label style={styles.label}>
+          Customer Announcement
+        </label>
+
+        <textarea
+          name="availabilityMessage"
+          value={form.availabilityMessage}
+          onChange={handleChange}
+          placeholder="Write a message for your customers..."
+          rows={3}
+          style={styles.input}
+        />
+      </div>
 
       <form onSubmit={handleSubmit} style={styles.form}>
         {fields.map((field) => (
@@ -138,14 +186,10 @@ function ManageSetting() {
               name={field.name}
               value={form[field.name] ?? ""}
               onChange={handleChange}
-              min={
-                field.type === "number"
-                  ? 0
-                  : undefined
-              }
-              required={
-                ["brandName", "phone", "email"].includes(field.name)
-              }
+              min={field.type === "number" ? 0 : undefined}
+              required={["brandName", "phone", "email"].includes(
+                field.name
+              )}
               style={styles.input}
             />
           </div>
@@ -170,9 +214,49 @@ const styles = {
   },
   heading: { color: "#e4c98c" },
   subtitle: { color: "#c8b9a5" },
-  form: { display: "flex", flexDirection: "column", gap: "17px" },
-  field: { display: "flex", flexDirection: "column", gap: "7px" },
+
+  availabilityBox: {
+    padding: "18px",
+    marginBottom: "25px",
+    border: "1px solid #80643e",
+    borderRadius: "8px",
+    background: "#17110e",
+  },
+
+  availabilityHeading: {
+    color: "#e4c98c",
+    marginTop: 0,
+  },
+
+  availabilityToggle: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    fontWeight: "bold",
+    padding: "10px 0",
+    cursor: "pointer",
+  },
+
+  availabilityInfo: {
+    color: "#c8b9a5",
+    fontSize: "14px",
+    marginBottom: "15px",
+  },
+
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "17px",
+  },
+
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "7px",
+  },
+
   label: { color: "#e4c98c" },
+
   input: {
     width: "100%",
     boxSizing: "border-box",
@@ -181,7 +265,9 @@ const styles = {
     color: "white",
     border: "1px solid #80643e",
     borderRadius: "5px",
+    fontFamily: "inherit",
   },
+
   button: {
     padding: "13px",
     background: "#c6a15b",
@@ -191,6 +277,7 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
+
   message: { color: "#e4c98c" },
 };
 

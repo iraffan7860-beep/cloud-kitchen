@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com";
 
 function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -14,11 +14,21 @@ function AdminLogin({ onLogin }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/admin/login`, {
+      const response = await fetch(`${API_URL}/api/admin/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ email, password }),
       });
+
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error(
+          "Server returned HTML instead of JSON. Please check the backend API route."
+        );
+      }
 
       const data = await response.json();
 
@@ -34,6 +44,7 @@ function AdminLogin({ onLogin }) {
 
       localStorage.setItem("fc-admin-token", token);
       onLogin?.(token);
+
     } catch (err) {
       setError(err.message || "Something went wrong.");
     } finally {

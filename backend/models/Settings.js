@@ -45,6 +45,16 @@ const settingsSchema = new mongoose.Schema(
     closingTime: {
       type: String,
       default: "00:00"
+    },
+
+    // Kitchen Availability
+    isAvailable: {
+      type: Boolean,
+      default: true
+    },
+    availabilityMessage: {
+      type: String,
+      default: "Today we are not accepting orders."
     }
   },
   { timestamps: true }
