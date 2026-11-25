@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://https://fc-kitchen-bds4.onrender.com";
+const API_URL = import.meta.env.VITE_API_URL || "https://fc-kitchen-bds4.onrender.com/api";
 
 function CheckoutForm({ onBack }) {
   const { cart, cartCount, cartTotal, clearCart } = useCart();
