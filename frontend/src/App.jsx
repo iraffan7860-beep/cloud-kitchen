@@ -20,7 +20,7 @@ import ManageProduct from "./pages/admin/ManageProduct";
 import ManageSetting from "./pages/admin/ManageSettings";
 import ManageReviews from "./pages/admin/ManageReviews";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "http://https://fc-kitchen-bds4.onrender.com/api";
 
 function App() {
   const [products, setProducts] = useState([]);

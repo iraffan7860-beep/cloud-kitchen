@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = "http://https://fc-kitchen-bds4.onrender.com/api";
 
 function ManageSetting() {
   const [form, setForm] = useState({
