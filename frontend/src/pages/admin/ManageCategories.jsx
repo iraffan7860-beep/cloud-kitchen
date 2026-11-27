@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_URL = "https://https://fc-kitchen-bds4.onrender.com/api";
+const API_URL = "https://fc-kitchen-bds4.onrender.com/api";
 
 function ManageCategory() {
   const [categories, setCategories] = useState([]);
