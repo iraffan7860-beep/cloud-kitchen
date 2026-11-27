@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import ManageProduct from "../components/ManageProduct";
 import ManageCategory from "../components/ManageCategory";
@@ -16,84 +15,47 @@ function AdminDashboard({ onLogout }) {
   ];
 
   return (
-    <main style={styles.page}>
-      <header style={styles.header}>
-        <h1>FC Kitchen Admin</h1>
-        <button style={styles.logout} onClick={onLogout}>
+    <div className="admin-dashboard">
+      <aside className="admin-sidebar">
+        <div className="admin-logo">FC Kitchen</div>
+        <p className="admin-subtitle">ADMIN PANEL</p>
+
+        <nav className="admin-nav">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={activeTab === tab.id ? "active" : ""}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <button className="admin-logout" onClick={onLogout}>
           Logout
         </button>
-      </header>
+      </aside>
 
-      <nav style={styles.nav}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            style={{
-              ...styles.tab,
-              ...(activeTab === tab.id ? styles.activeTab : {}),
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
-      </nav>
+      <main className="admin-main">
+        <header className="admin-header">
+          <div>
+            <p className="admin-subtitle">WELCOME BACK</p>
+            <h1>
+              {tabs.find((tab) => tab.id === activeTab)?.label}
+            </h1>
+          </div>
+        </header>
 
-      <section style={styles.content}>
-        {activeTab === "products" && <ManageProduct />}
-        {activeTab === "categories" && <ManageCategory />}
-        {activeTab === "settings" && <ManageSetting />}
-        {activeTab === "reviews" && <ManageReviews />}
-      </section>
-    </main>
+        <section className="admin-content">
+          {activeTab === "products" && <ManageProduct />}
+          {activeTab === "categories" && <ManageCategory />}
+          {activeTab === "settings" && <ManageSetting />}
+          {activeTab === "reviews" && <ManageReviews />}
+        </section>
+      </main>
+    </div>
   );
 }
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "#17110e",
-    color: "#f5eee3",
-    padding: "20px",
-  },
-  header: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    flexWrap: "wrap",
-    color: "#e4c98c",
-  },
-  nav: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "10px",
-    margin: "25px 0",
-  },
-  tab: {
-    padding: "12px 20px",
-    background: "#302219",
-    color: "#eee0c9",
-    border: "1px solid #80643e",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-  activeTab: {
-    background: "#c6a15b",
-    color: "#17110e",
-    fontWeight: "bold",
-  },
-  content: {
-    maxWidth: "1100px",
-    margin: "auto",
-  },
-  logout: {
-    padding: "10px 18px",
-    background: "#8b3434",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-};
 
 export default AdminDashboard;
