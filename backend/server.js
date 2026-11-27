@@ -14,8 +14,7 @@ const app = express();
 // STEP 1: ALLOWED FRONTEND URLS
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://cloud-kitchen-2-mpln.onrender.com"
-];
+  "https://fc-kitchen-bds4.onrender.com"];
 
 // STEP 2: CORS CONFIGURATION
 app.use(cors({
