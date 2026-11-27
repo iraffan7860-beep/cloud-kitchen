@@ -62,10 +62,13 @@ function ManageCategory() {
         throw new Error(data.message || "Unable to save category.");
       }
 
+      const wasEditing = Boolean(editingId);
+
       setName("");
       setDescription("");
       setEditingId(null);
-      setMessage(editingId ? "Category updated!" : "Category added!");
+      setMessage(wasEditing ? "Category updated!" : "Category added!");
+
       await loadCategories();
     } catch (error) {
       setMessage(error.message);
@@ -105,13 +108,20 @@ function ManageCategory() {
     }
   };
 
-  return (
-    <section style={styles.container}>
-      <h2 style={styles.heading}>Manage Categories</h2>
+  const cancelEdit = () => {
+    setEditingId(null);
+    setName("");
+    setDescription("");
+    setMessage("");
+  };
 
-      <form onSubmit={handleSubmit} style={styles.form}>
+  return (
+    <section className="manage-category">
+      <h2 className="manage-category-heading">Manage Categories</h2>
+
+      <form onSubmit={handleSubmit} className="category-form">
         <input
-          style={styles.input}
+          className="category-input"
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Category name"
@@ -119,15 +129,18 @@ function ManageCategory() {
         />
 
         <textarea
-          style={styles.input}
+          className="category-input category-textarea"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Category description"
           rows="3"
         />
 
-        <div style={styles.actions}>
-          <button style={styles.button} disabled={loading}>
+        <div className="category-actions">
+          <button
+            className="category-button"
+            disabled={loading}
+          >
             {loading
               ? "Saving..."
               : editingId
@@ -138,12 +151,8 @@ function ManageCategory() {
           {editingId && (
             <button
               type="button"
-              style={styles.cancel}
-              onClick={() => {
-                setEditingId(null);
-                setName("");
-                setDescription("");
-              }}
+              className="category-cancel"
+              onClick={cancelEdit}
             >
               Cancel
             </button>
@@ -151,99 +160,47 @@ function ManageCategory() {
         </div>
       </form>
 
-      {message && <p style={styles.message}>{message}</p>}
+      {message && (
+        <p className="category-message">{message}</p>
+      )}
 
-      <h3 style={styles.subheading}>Existing Categories</h3>
+      <h3 className="category-subheading">
+        Existing Categories
+      </h3>
 
-      {categories.map((category) => (
-        <div key={category._id} style={styles.item}>
-          <div>
-            <strong style={styles.name}>{category.name}</strong>
-            <p style={styles.description}>{category.description}</p>
+      <div className="category-list">
+        {categories.map((category) => (
+          <div className="category-item" key={category._id}>
+            <div className="category-item-info">
+              <strong className="category-name">
+                {category.name}
+              </strong>
+
+              <p className="category-description">
+                {category.description}
+              </p>
+            </div>
+
+            <div className="category-actions">
+              <button
+                className="category-edit"
+                onClick={() => handleEdit(category)}
+              >
+                Edit
+              </button>
+
+              <button
+                className="category-delete"
+                onClick={() => handleDelete(category._id)}
+              >
+                Delete
+              </button>
+            </div>
           </div>
-
-          <div style={styles.actions}>
-            <button
-              style={styles.edit}
-              onClick={() => handleEdit(category)}
-            >
-              Edit
-            </button>
-
-            <button
-              style={styles.delete}
-              onClick={() => handleDelete(category._id)}
-            >
-              Delete
-            </button>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </section>
   );
 }
-
-const styles = {
-  container: {
-    background: "#211812",
-    color: "#f5eee3",
-    padding: "25px",
-    borderRadius: "10px",
-  },
-  heading: { color: "#e4c98c" },
-  subheading: { color: "#e4c98c", marginTop: "30px" },
-  form: { display: "flex", flexDirection: "column", gap: "12px" },
-  input: {
-    padding: "12px",
-    background: "#17110e",
-    color: "white",
-    border: "1px solid #80643e",
-    borderRadius: "5px",
-  },
-  actions: { display: "flex", gap: "10px", flexWrap: "wrap" },
-  button: {
-    padding: "11px 18px",
-    background: "#c6a15b",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-  cancel: {
-    padding: "11px 18px",
-    background: "#555",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-  message: { color: "#e4c98c" },
-  item: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "15px",
-    padding: "15px 0",
-    borderBottom: "1px solid #59432d",
-    flexWrap: "wrap",
-  },
-  name: { color: "#e4c98c" },
-  description: { color: "#c8b9a5", marginBottom: 0 },
-  edit: {
-    padding: "8px 13px",
-    background: "#80643e",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-  delete: {
-    padding: "8px 13px",
-    background: "#8b3434",
-    color: "white",
-    border: "none",
-    borderRadius: "5px",
-    cursor: "pointer",
-  },
-};
 
 export default ManageCategory;
