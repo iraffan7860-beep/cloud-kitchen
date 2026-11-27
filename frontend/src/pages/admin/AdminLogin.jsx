@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const API_URL = "https://fc-kitchen-bds4.onrender.com/api";
+const API_URL = "https://fc-kitchen-backend.onrender.com/api";
 
 function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState("");
@@ -14,7 +14,7 @@ function AdminLogin({ onLogin }) {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/admin/login`, {
+      const response = await fetch(`${API_URL}/admin/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
