@@ -1294,3 +1294,475 @@ a {
   cursor: pointer;
   box-shadow: 0 5px 25px rgba(0, 0, 0, 0.35);
 }
+
+/* =====================================
+   FC KITCHEN - GLOBAL MOBILE RESPONSIVE
+   Mobile First Design
+===================================== */
+
+/* GLOBAL RESET */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
+  min-width: 320px;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+img,
+video,
+iframe {
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+a {
+  overflow-wrap: anywhere;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* GLOBAL CONTAINERS */
+
+.container,
+.wrapper,
+.section-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: 20px;
+}
+
+section {
+  width: 100%;
+}
+
+/* TYPOGRAPHY */
+
+h1 {
+  font-size: clamp(28px, 5vw, 52px);
+  line-height: 1.15;
+}
+
+h2 {
+  font-size: clamp(23px, 4vw, 38px);
+  line-height: 1.2;
+}
+
+h3 {
+  font-size: clamp(18px, 3vw, 25px);
+  line-height: 1.3;
+}
+
+p {
+  line-height: 1.65;
+}
+
+/* BUTTONS */
+
+button,
+.btn,
+.button {
+  min-height: 44px;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* HEADER / NAVBAR */
+
+header,
+.navbar {
+  width: 100%;
+  max-width: 100%;
+}
+
+.navbar img,
+header img {
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* HERO SECTION */
+
+.hero,
+.hero-section {
+  width: 100%;
+  min-height: 450px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.hero img,
+.hero-section img {
+  max-width: 100%;
+  object-fit: cover;
+}
+
+/* PRODUCT GRID */
+
+.products-grid,
+.product-grid,
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.product-card {
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.product-card img {
+  width: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* CATEGORY GRID */
+
+.categories-grid,
+.category-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+}
+
+/* FORMS */
+
+input,
+textarea,
+select {
+  max-width: 100%;
+  min-width: 0;
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+.form-group {
+  width: 100%;
+}
+
+/* CART */
+
+.cart-container,
+.cart-page {
+  width: 100%;
+  max-width: 1100px;
+  margin-inline: auto;
+  padding: 25px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.cart-item img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* CHECKOUT */
+
+.checkout-container,
+.checkout-form {
+  width: 100%;
+  max-width: 750px;
+  margin-inline: auto;
+  padding: 25px;
+}
+
+/* FOOTER */
+
+footer {
+  width: 100%;
+  overflow: hidden;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 25px;
+}
+
+/* TABLES */
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* =====================================
+   TABLETS
+===================================== */
+
+@media (max-width: 1024px) {
+
+  .products-grid,
+  .product-grid,
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .categories-grid,
+  .category-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .container,
+  .wrapper,
+  .section-container {
+    padding-inline: 18px;
+  }
+}
+
+/* =====================================
+   MOBILE PHONES
+===================================== */
+
+@media (max-width: 600px) {
+
+  body {
+    font-size: 14px;
+  }
+
+  .container,
+  .wrapper,
+  .section-container {
+    padding-inline: 15px;
+  }
+
+  section {
+    padding-block: 35px;
+  }
+
+  /* HEADER */
+
+  header {
+    padding-inline: 12px;
+  }
+
+  .navbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .navbar img {
+    max-height: 48px;
+  }
+
+  /* HERO */
+
+  .hero,
+  .hero-section {
+    min-height: auto;
+    padding: 55px 15px;
+    text-align: center;
+  }
+
+  .hero-content {
+    width: 100%;
+  }
+
+  .hero img,
+  .hero-section img {
+    max-height: 320px;
+  }
+
+  /* PRODUCTS */
+
+  .products-grid,
+  .product-grid,
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .product-card {
+    border-radius: 12px;
+  }
+
+  .product-card img {
+    aspect-ratio: 1 / 1;
+  }
+
+  .product-card h3 {
+    font-size: 15px;
+  }
+
+  .product-card p {
+    font-size: 13px;
+  }
+
+  /* CATEGORIES */
+
+  .categories-grid,
+  .category-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  /* BUTTONS */
+
+  .btn,
+  .button {
+    max-width: 100%;
+    padding: 12px 17px;
+  }
+
+  /* CART */
+
+  .cart-container,
+  .cart-page {
+    padding: 15px;
+  }
+
+  .cart-item {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .cart-item img {
+    width: 75px;
+    height: 75px;
+  }
+
+  /* CHECKOUT */
+
+  .checkout-container,
+  .checkout-form {
+    padding: 15px;
+  }
+
+  /* FOOTER */
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  /* FORMS */
+
+  input,
+  select,
+  textarea {
+    width: 100%;
+  }
+
+  /* GENERAL */
+
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: block !important;
+  }
+}
+
+/* =====================================
+   SMALL PHONES
+===================================== */
+
+@media (max-width: 380px) {
+
+  .container,
+  .wrapper,
+  .section-container {
+    padding-inline: 11px;
+  }
+
+  .products-grid,
+  .product-grid,
+  .menu-grid {
+    gap: 9px;
+  }
+
+  h1 {
+    font-size: 27px;
+  }
+
+  .product-card h3 {
+    font-size: 13px;
+  }
+
+  .product-card p {
+    font-size: 12px;
+  }
+
+  .btn,
+  .button {
+    font-size: 13px;
+  }
+}
+
+/* =====================================
+   LARGE DESKTOP
+===================================== */
+
+@media (min-width: 1025px) {
+
+  .mobile-only {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: block !important;
+  }
+}
