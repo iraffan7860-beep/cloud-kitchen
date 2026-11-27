@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 import {
@@ -15,10 +14,7 @@ import Footer from "./components/Footer";
 import BackToTop from "./components/BackToTop";
 
 import AdminLogin from "./pages/admin/AdminLogin";
-import ManageCategory from "./pages/admin/ManageCategories";
-import ManageProduct from "./pages/admin/ManageProduct";
-import ManageSetting from "./pages/admin/ManageSettings";
-import ManageReviews from "./pages/admin/ManageReviews";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 
 const API_URL = "https://fc-kitchen-backend.onrender.com/api";
 
@@ -40,7 +36,6 @@ function App() {
   );
 
   const [adminChecking, setAdminChecking] = useState(true);
-  const [adminPage, setAdminPage] = useState("overview");
 
   const {
     addToCart,
@@ -51,6 +46,7 @@ function App() {
 
   const isKitchenClosed = settings.isAvailable === false;
 
+  // Navigation
   const navigate = (path) => {
     window.history.pushState({}, "", path);
     setCurrentPath(path);
@@ -180,6 +176,7 @@ function App() {
     loadWebsite();
   }, [currentPath]);
 
+  // Filter products
   const filteredProducts =
     selectedCategory === "All"
       ? products
@@ -215,7 +212,6 @@ function App() {
       <AdminLogin
         onLogin={(token) => {
           setAdminToken(token);
-          setAdminPage("overview");
           navigate("/admin");
         }}
       />
@@ -239,142 +235,10 @@ function App() {
     const logout = () => {
       localStorage.removeItem("fc-admin-token");
       setAdminToken(null);
-      setAdminPage("overview");
       navigate("/admin/login");
     };
 
-    const renderAdminPage = () => {
-      switch (adminPage) {
-        case "products":
-          return <ManageProduct />;
-
-        case "categories":
-          return <ManageCategory />;
-
-        case "settings":
-          return <ManageSetting />;
-
-        case "reviews":
-          return <ManageReviews />;
-
-        default:
-          return (
-            <div style={adminStyles.welcome}>
-              <p style={adminStyles.eyebrow}>FC KITCHEN ADMIN</p>
-              <h1>Welcome to Dashboard</h1>
-              <p>
-                Manage your kitchen products, categories and
-                website settings from here.
-              </p>
-
-              <div style={adminStyles.cards}>
-                <button
-                  onClick={() => setAdminPage("products")}
-                  style={adminStyles.card}
-                >
-                  <span>🍽️</span>
-                  <strong>Manage Products</strong>
-                  <small>Add, edit and delete products</small>
-                </button>
-
-                <button
-                  onClick={() => setAdminPage("categories")}
-                  style={adminStyles.card}
-                >
-                  <span>📂</span>
-                  <strong>Manage Categories</strong>
-                  <small>Organise your food menu</small>
-                </button>
-
-                <button
-                  onClick={() => setAdminPage("settings")}
-                  style={adminStyles.card}
-                >
-                  <span>⚙️</span>
-                  <strong>Website Settings</strong>
-                  <small>Update business information</small>
-                </button>
-              </div>
-
-              <div style={adminStyles.notice}>
-                <strong>Orders:</strong> Customer orders currently
-                go through WhatsApp. They are not yet stored in
-                the database.
-              </div>
-            </div>
-          );
-      }
-    };
-
-    return (
-      <div style={adminStyles.layout}>
-        <aside style={adminStyles.sidebar}>
-          <h2 style={adminStyles.logo}>
-            FC <span>KITCHEN</span>
-          </h2>
-
-          <p style={adminStyles.adminLabel}>ADMIN PANEL</p>
-
-          {[
-            { id: "overview", label: "Dashboard", icon: "⌂" },
-            { id: "products", label: "Manage Products", icon: "🍽️" },
-            { id: "categories", label: "Manage Categories", icon: "📂" },
-            { id: "settings", label: "Website Settings", icon: "⚙️" },
-            { id: "reviews", label: "Manage Reviews", icon: "⭐" },
-          ].map((item) => (
-            <button
-              key={item.id}
-              onClick={() => setAdminPage(item.id)}
-              style={{
-                ...adminStyles.navButton,
-                ...(adminPage === item.id
-                  ? adminStyles.activeNav
-                  : {}),
-              }}
-            >
-              <span>{item.icon}</span>
-              {item.label}
-            </button>
-          ))}
-
-          <button
-            onClick={() => navigate("/")}
-            style={adminStyles.navButton}
-          >
-            ↗ View Website
-          </button>
-
-          <button
-            onClick={logout}
-            style={adminStyles.logout}
-          >
-            Logout
-          </button>
-        </aside>
-
-        <main style={adminStyles.main}>
-          <header style={adminStyles.topbar}>
-            <div>
-              <p style={adminStyles.eyebrow}>FC KITCHEN</p>
-              <h2>
-                {adminPage === "overview"
-                  ? "Dashboard"
-                  : adminPage === "products"
-                  ? "Manage Products"
-                  : adminPage === "categories"
-                  ? "Manage Categories"
-                  : adminPage === "reviews"
-                  ? "Manage Reviews"
-                  : "Website Settings"}
-              </h2>
-            </div>
-            <span style={adminStyles.status}>Admin Panel</span>
-          </header>
-
-          {renderAdminPage()}
-        </main>
-      </div>
-    );
+    return <AdminDashboard onLogout={logout} />;
   }
 
   // CHECKOUT PAGE
@@ -779,119 +643,6 @@ function App() {
 }
 
 const adminStyles = {
-  layout: {
-    minHeight: "100vh",
-    display: "flex",
-    background: "#17110e",
-    color: "#f5eee3",
-    fontFamily: "Arial, sans-serif",
-  },
-  sidebar: {
-    width: "250px",
-    minWidth: "220px",
-    background: "#211812",
-    padding: "25px 15px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    borderRight: "1px solid #59432d",
-  },
-  logo: {
-    color: "#e4c98c",
-    fontFamily: "Georgia, serif",
-    textAlign: "center",
-    marginBottom: "20px",
-  },
-  adminLabel: {
-    color: "#a98b5c",
-    fontSize: "11px",
-    letterSpacing: "2px",
-    paddingLeft: "10px",
-  },
-  navButton: {
-    padding: "13px",
-    background: "transparent",
-    color: "#f5eee3",
-    border: "1px solid transparent",
-    borderRadius: "6px",
-    textAlign: "left",
-    cursor: "pointer",
-    display: "flex",
-    gap: "10px",
-    alignItems: "center",
-  },
-  activeNav: {
-    background: "#493622",
-    border: "1px solid #c6a15b",
-    color: "#e4c98c",
-  },
-  logout: {
-    marginTop: "auto",
-    padding: "12px",
-    background: "#6d3028",
-    color: "white",
-    border: "none",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-  main: {
-    flex: 1,
-    padding: "30px",
-    minWidth: 0,
-  },
-  topbar: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    gap: "15px",
-    flexWrap: "wrap",
-    borderBottom: "1px solid #59432d",
-    paddingBottom: "20px",
-    marginBottom: "30px",
-  },
-  eyebrow: {
-    color: "#c6a15b",
-    letterSpacing: "2px",
-    fontSize: "11px",
-  },
-  status: {
-    color: "#e4c98c",
-    border: "1px solid #80643e",
-    padding: "8px 13px",
-    borderRadius: "20px",
-    fontSize: "12px",
-  },
-  welcome: {
-    background: "#211812",
-    padding: "30px",
-    borderRadius: "10px",
-    border: "1px solid #59432d",
-  },
-  cards: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-    gap: "15px",
-    marginTop: "25px",
-  },
-  card: {
-    background: "#302217",
-    border: "1px solid #80643e",
-    color: "#f5eee3",
-    padding: "22px",
-    borderRadius: "8px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    textAlign: "left",
-    cursor: "pointer",
-  },
-  notice: {
-    marginTop: "25px",
-    padding: "15px",
-    background: "#302217",
-    borderLeft: "3px solid #c6a15b",
-    color: "#e4c98c",
-  },
   loading: {
     minHeight: "100vh",
     display: "grid",

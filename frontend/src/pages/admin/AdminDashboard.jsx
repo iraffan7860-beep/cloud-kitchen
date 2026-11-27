@@ -1,23 +1,23 @@
 import { useState } from "react";
-import ManageProduct from "../components/ManageProduct";
-import ManageCategory from "../components/ManageCategory";
-import ManageSetting from "../components/ManageSetting";
-import ManageReviews from "../components/ManageReviews";
+import ManageProduct from "./ManageProduct";
+import ManageCategory from "./ManageCategories";
+import ManageSetting from "./ManageSettings";
+import ManageReviews from "./ManageReviews";
 
 function AdminDashboard({ onLogout }) {
   const [activeTab, setActiveTab] = useState("products");
 
   const tabs = [
-    { id: "products", label: "Products" },
-    { id: "categories", label: "Categories" },
-    { id: "settings", label: "Settings" },
-    { id: "reviews", label: "Reviews" },
+    { id: "products", label: "Products", icon: "🍽️" },
+    { id: "categories", label: "Categories", icon: "📂" },
+    { id: "settings", label: "Settings", icon: "⚙️" },
+    { id: "reviews", label: "Reviews", icon: "⭐" },
   ];
 
   return (
     <div className="admin-dashboard">
       <aside className="admin-sidebar">
-        <div className="admin-logo">FC Kitchen</div>
+        <div className="admin-logo">FC KITCHEN</div>
         <p className="admin-subtitle">ADMIN PANEL</p>
 
         <nav className="admin-nav">
@@ -27,6 +27,7 @@ function AdminDashboard({ onLogout }) {
               className={activeTab === tab.id ? "active" : ""}
               onClick={() => setActiveTab(tab.id)}
             >
+              <span>{tab.icon}</span>
               {tab.label}
             </button>
           ))}
@@ -45,6 +46,7 @@ function AdminDashboard({ onLogout }) {
               {tabs.find((tab) => tab.id === activeTab)?.label}
             </h1>
           </div>
+          <span className="admin-status">Admin Panel</span>
         </header>
 
         <section className="admin-content">
