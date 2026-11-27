@@ -1,4 +1,4 @@
-const API_URL = "https://fc-kitchen-bds4.onrender.com/api";
+const API_URL = "https://fc-kitchen-backend.onrender.com/api";
 
 const getToken = () => localStorage.getItem("fc-admin-token");
 
