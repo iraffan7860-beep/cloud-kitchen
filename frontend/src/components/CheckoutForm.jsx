@@ -99,7 +99,7 @@ Instructions: ${formData.instructions || "None"}
       setLoading(true);
       setError("");
 
-      const response = await fetch(`${API_URL}/api/testimonials`, {
+      const response = await fetch(`${API_URL}/testimonials`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

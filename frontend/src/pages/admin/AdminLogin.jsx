@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com";
+const API_URL = "https://fc-kitchen-bds4.onrender.com/api";
 
 function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState("");

@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 
-const API_URL = "https://cloud-kitchen-1-x5q3.onrender.com/api";
+const API_URL = "https://https://fc-kitchen-bds4.onrender.com/api";
 
 function ManageReviews() {
   const [reviews, setReviews] = useState([]);
